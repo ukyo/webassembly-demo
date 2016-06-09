@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>WebAssembly試してみる</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+        <style>
+            .reveal h2 {
+                text-transform: initial;
+            }
+        </style>
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal"><div class="slides">
+<section data-markdown
+    data-separator="\n---\n$"
+    data-separator-vertical="\n--\n">
+    <script type="text/template">
+## WebAssembly試してみる
+
+{ name: "加藤秀", twitter: "@ukyo" }
+
+---
+
+## WebAssemblyとは
+
+> WebAsssembly は策定が進んでいる標準の一つで、その目的は安全性とポータビリティを維持しつつ、サイズとロード時間の面で効率的なバイナリフォーマットの定義です。
+[https://www.mozilla.jp/blog/entry/10539/](https://www.mozilla.jp/blog/entry/10539/)
+
+---
+
+## 何が嬉しい
+
+* LLVM IRから変換することを想定してるので色々な言語で作れる
+* パフォーマンスが良い, バッテリーに優しいとか
+* モバイルでのWebの復権
+
+---
+
+## 現状
+
+[http://webassembly.github.io/](http://webassembly.github.io/) RoadmapのMVP
+
+---
+
+## コンパイル
+
+なんらかの言語<br>
+↓<br>
+LLVM IR<br>
+↓<br>
+WebAssemblyのテキスト表現<br>
+↓<br>
+WebAssemblyのバイナリ
+
+--
+
+* C/C++だとEmscriptenとかで結構簡単にいける
+* テキスト表現→バイナリは試した中では[sexpr-wasm-prototype](https://github.com/WebAssembly/sexpr-wasm-prototype)が一番簡単
+
+---
+
+## WebAssemblyのテキスト表現
+
+```lisp
+;; WebAssemblyのテキスト表現 いわゆるS式です LLVM IRっぽい
+(module
+  (func $add (param i32 i32) (result i32)
+    (i32.add (get_local 0) (get_local 0))
+  )
+  (export "add" $add)
+)
+```
+
+```
+# さっきのsexp-wasm-prototypeで変換
+$ sexpr-wasm add.wast -o add.wasm
+```
+
+```js
+// jsで実行
+fetch("path/to/add.wasm")
+.then(res => res.arrayBuffer())
+.then(buffer => {
+  let wasmModule = Wasm.instantiateModule(new Uint8Array(buffer), {});
+  console.log(wasmModule.exports.add(1, 2));
+});
+```
+
+--
+
+## 思ったより普通に書ける
+
+```lisp
+(module
+  ;; memory
+  (memory 1 1)
+  (export "memory" memory)
+  
+  ;; 関数
+  (func $sum (param $n i32) (result i32)
+    (local $result i32)
+    (set_local $result (i32.const 0))
+    ;; ループ
+    (loop $exit $cont
+      ;; if
+      (if (i32.eqz (get_local $n)) (br $exit))
+      (set_local $n (i32.sub (get_local $n) (i32.const 1)))
+      (set_local $result
+        (i32.add
+          (get_local $result)
+          (i32.load (i32.shl (get_local $n) (i32.const 2)))
+        )
+      )
+      (br $cont)
+    )
+    (get_local $result)
+  )
+  (export "sum" $sum)
+)
+```
+
+loop, if, function, memory(exportできる, jsでは生ArrayBuffer)
+
+---
+
+## DEMO
+
+---
+
+## おまけ
+
+* vscode拡張 [https://marketplace.visualstudio.com/items?itemName=ukyo.wast](https://marketplace.visualstudio.com/items?itemName=ukyo.wast)
+* 小さい開発環境 [https://github.com/ukyo/wast-small-starter](https://github.com/ukyo/wast-small-starter)
+
+</script></section>
+		</div></div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
