@@ -506,17 +506,6 @@ function processImageDataRGB(imageData, top_x, top_y, width, height, radius)
         yw += width;
     }
 
-    console.log(
-        radiusPlus1,
-        r_out_sum,
-        g_out_sum,
-        b_out_sum,
-        r_in_sum,
-        g_in_sum,
-        b_in_sum
-    );
-
-
     for (x = 0; x < width; x++)
     {
         g_in_sum = b_in_sum = r_in_sum = g_sum = b_sum = r_sum = 0;
