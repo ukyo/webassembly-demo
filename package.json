@@ -1,0 +1,32 @@
+{
+  "name": "wabassembly-demo",
+  "version": "0.0.1",
+  "description": "wasm demo",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node tools/setup.js",
+    "start": "concurrently \"npm run watch\" \"npm run lite\"",
+    "watch": "node tools/watch.js",
+    "lite": "lite-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ukyo/wast-small-starter.git"
+  },
+  "keywords": [
+    "WebAssembly",
+    "wast"
+  ],
+  "author": "ukyo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ukyo/wast-small-starter/issues"
+  },
+  "homepage": "https://github.com/ukyo/wast-small-starter#readme",
+  "devDependencies": {
+    "concurrently": "^2.1.0",
+    "inquirer": "^1.0.3",
+    "lite-server": "^2.2.0",
+    "watch": "^0.18.0"
+  }
+}
